@@ -1,27 +1,31 @@
-# Gunakan image Python Alpine sebagai base image
-FROM python:alpine3.18
-
-# Atur working directory di dalam container
+# Stage 1: Build dependencies
+FROM python:alpine3.18 AS builder
 WORKDIR /code
-
-# Salin requirements.txt ke working directory
 COPY ./requirements.txt /code/
 
-# Tambahkan dependensi tambahan jika diperlukan
-RUN apk --no-cache add build-base gcc musl-dev python3-dev
+# Install build tools and Rust compiler
+RUN apk --no-cache add build-base gcc musl-dev python3-dev rust cargo && \
+    pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
-# Install semua dependensi yang ada di requirements.txt
-RUN pip3 install --no-cache-dir -r requirements.txt
+# Stage 2: Final image
+FROM python:alpine3.18
+WORKDIR /code
+COPY --from=builder /wheels /wheels
+COPY --from=builder /code/requirements.txt .
 
-# Salin semua kode aplikasi ke working directory
+# Install dependencies using pre-built wheels
+RUN pip3 install --no-cache-dir --no-index --find-links=/wheels -r requirements.txt && \
+    rm -rf /wheels
+
+# Copy the application
 COPY . /code/
 
-# Tambah user non-root untuk menjalankan aplikasi (lebih aman)
+# Add non-root user for safety
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
-# Expose port 8000
+# Expose application port
 EXPOSE 8000
 
-# Jalankan aplikasi
+# CMD to run the application on host 0.0.0.0 and port 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
