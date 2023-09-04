@@ -4,7 +4,7 @@ WORKDIR /code
 COPY ./requirements.txt /code/
 # Add --no-cache to avoid cache creation by apk
 # Adding additional dependencies
-RUN apk --no-cache add build-base gcc musl-dev python3-dev && \
+RUN apk --no-cache add build-base gcc musl-dev python3-dev libffi-dev openssl-dev && \
     pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # Remove unnecessary packages after installation
