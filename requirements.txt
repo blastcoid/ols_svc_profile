@@ -10,3 +10,4 @@ asyncio==3.4.3
 uvicorn[standard]==0.22.0
 strawberry-graphql[fastapi]==0.183.5
 strawberry-graphql[cli]==0.183.5
+ujson==5.7.0
