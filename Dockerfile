@@ -1,5 +1,5 @@
 # Use multi-stage builds for a slimmer and safer image
-FROM python:3.11-alpine AS builder
+FROM python:alpine3.18 AS builder
 WORKDIR /code
 COPY ./requirements.txt /code/
 # Add --no-cache to avoid cache creation by apk
@@ -10,7 +10,7 @@ RUN apk --no-cache add build-base && \
 RUN apk del build-base
 
 # Second stage of the multi-stage build
-FROM python:3.11-alpine
+FROM python:alpine3.18
 WORKDIR /code
 COPY --from=builder /wheels /wheels
 COPY --from=builder /code/requirements.txt .
@@ -21,7 +21,7 @@ RUN pip3 install --no-cache-dir --no-index --find-links=/wheels -r requirements.
     rm -rf /wheels
 
 # Copy the application
-COPY ./app /code/app
+COPY . /code/
 
 # Use a non-root user to run the application, which is safer
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
@@ -30,5 +30,5 @@ USER appuser
 # Expose application port
 EXPOSE 8000
 
-# CMD to run the application
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# CMD to run the application host 0.0.0.0 and port 8000
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
