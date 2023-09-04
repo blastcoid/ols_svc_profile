@@ -1,5 +1,5 @@
 # Use multi-stage builds for a slimmer and safer image
-FROM python:3.9-alpine AS builder
+FROM python:alpine3.18 AS builder
 WORKDIR /code
 COPY ./requirements.txt /code/
 # Add --no-cache to avoid cache creation by apk
@@ -11,7 +11,7 @@ RUN apk --no-cache add build-base gcc musl-dev python3-dev libffi-dev openssl-de
 RUN apk del build-base gcc musl-dev python3-dev
 
 # Second stage of the multi-stage build
-FROM python:3.9-alpine
+FROM python:alpine3.18
 WORKDIR /code
 COPY --from=builder /wheels /wheels
 COPY --from=builder /code/requirements.txt .
