@@ -3,9 +3,11 @@ FROM python:alpine3.18 AS builder
 WORKDIR /code
 COPY ./requirements.txt /code/
 
-# Install build tools and Rust compiler
+# Install build tools and Rust compiler & remove unnecessary packages after installation
 RUN apk --no-cache add build-base gcc musl-dev python3-dev rust cargo && \
-    pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
+    pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt && \
+    apk del build-base gcc musl-dev python3-dev rust cargo
+
 
 # Stage 2: Final image
 FROM python:alpine3.18
