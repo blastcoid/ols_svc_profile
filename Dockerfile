@@ -1,16 +1,17 @@
 # Use multi-stage builds for a slimmer and safer image
-FROM python:alpine3.18 AS builder
+FROM python:3.9-alpine AS builder
 WORKDIR /code
 COPY ./requirements.txt /code/
 # Add --no-cache to avoid cache creation by apk
-RUN apk --no-cache add build-base && \
+# Adding additional dependencies
+RUN apk --no-cache add build-base gcc musl-dev python3-dev && \
     pip3 wheel --no-cache-dir --wheel-dir /wheels -r requirements.txt
 
 # Remove unnecessary packages after installation
-RUN apk del build-base
+RUN apk del build-base gcc musl-dev python3-dev
 
 # Second stage of the multi-stage build
-FROM python:alpine3.18
+FROM python:3.9-alpine
 WORKDIR /code
 COPY --from=builder /wheels /wheels
 COPY --from=builder /code/requirements.txt .
